@@ -1,0 +1,21 @@
+# Dependencias
+frontend/node_modules/
+
+# Builds
+frontend/dist/
+
+# Docker
+*.log
+*.pid
+*.pid.lock
+.env
+.env.*
+docker-compose.override.yml
+
+# Sistema / editor
+.DS_Store
+Thumbs.db
+.idea
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json

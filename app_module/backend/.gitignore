@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual envs
+.venv/
+env/
+
+# Builds
+build/
+dist/
+
+# Logs
+*.log
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+
+# Docker/cache
+__pycache__/
+.mypy_cache/
+pytest_cache/
+
+# Env files (NEVER COMMIT)
+.env
+.env.*

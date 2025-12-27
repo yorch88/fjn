@@ -1,0 +1,60 @@
+version: "3.9"
+
+services:
+  frontend:
+    build: ./frontend
+    container_name: support-kiosk-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: sh -c "npm install && npm run dev"
+
+  backend:
+    build: ./backend
+    container_name: support-kiosk-backend
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongo
+      - redis
+    command: sh -c "./entrypoint.sh"
+
+  mongo:
+    image: mongo:7
+    container_name: support-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  redis:
+    image: redis:7
+    container_name: support-redis
+    ports:
+      - "6379:6379"
+
+  celery:
+    build: ./backend
+    container_name: support-celery
+    command: celery -A app.modules.tickets.workers.celery worker --loglevel=INFO
+    depends_on:
+      - backend
+      - redis
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - MONGO_URL=mongodb://mongo:27017/support
+    volumes:
+      - ./backend:/app
+
+volumes:
+  mongo_data:
