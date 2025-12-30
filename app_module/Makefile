@@ -1,4 +1,4 @@
-PROJECT_NAME = support-kiosk
+PROJECT_NAME = support-app-module
 DOCKER_COMPOSE = docker-compose
 DOCKER_EXEC = docker exec
 

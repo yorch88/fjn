@@ -1,13 +1,13 @@
-from .models import Ticket
 from ...core.db import get_db
 
-async def list_tickets():
-    db = await get_db()
-    cursor = db.tickets.find({})
-    return [Ticket(**t) async for t in cursor]
 
-async def create_ticket(ticket: Ticket):
+async def list_tickets(plant_id: str):
     db = await get_db()
-    r = await db.tickets.insert_one(ticket.model_dump())
-    ticket.id = str(r.inserted_id)
-    return ticket
+    cursor = db.tickets.find({"id_plant": plant_id})
+    return [t async for t in cursor]
+
+
+async def create_ticket(ticket):
+    db = await get_db()
+    await db.tickets.insert_one(ticket)
+    return {"message": "Ticket created"}

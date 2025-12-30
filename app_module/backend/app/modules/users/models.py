@@ -2,6 +2,13 @@ from pydantic import BaseModel, EmailStr
 from typing import List, Optional
 from datetime import datetime
 
+class Users(BaseModel):
+    name: str
+    email: EmailStr
+    clock_num: str
+    id_area: str
+    id_plant: str
+
 
 class UserCreate(BaseModel):
     name: str

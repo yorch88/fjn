@@ -1,7 +1,7 @@
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from fastapi import HTTPException
 
-from .models import UserCreate
+from .models import Users, UserCreate
 from .auth import hash_password, verify_password, create_token
 from ...core.db import get_db
 
@@ -38,3 +38,9 @@ async def login_user(email: str, password: str):
     })
 
     return {"access_token": token}
+
+
+async def list_users():
+    db = await get_db()
+    cursor = db.users.find({})
+    return [Users(**t) async for t in cursor]
