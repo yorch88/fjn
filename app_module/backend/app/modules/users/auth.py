@@ -17,13 +17,17 @@ def verify_password(password: str, hashed: str) -> bool:
     return pwd_context.verify(password[:MAX_LEN], hashed)
 
 
-def create_token(data: dict, expires_minutes: int = 60):
-    to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=expires_minutes)
-    to_encode.update({"exp": expire})
+def create_token(user_id: str, id_plant: str, expires_minutes: int = 60) -> str:
+    now = datetime.utcnow()
+    payload = {
+        "sub": user_id,       # 👈 aquí estará el ID de usuario
+        "id_plant": id_plant, # 👈 planta
+        "iat": now,
+        "exp": now + timedelta(minutes=expires_minutes),
+    }
 
     return jwt.encode(
-        to_encode,
-        settings.API_KEY,
-        algorithm="HS256"
+        payload,
+        settings.SECRET_KEY,
+        algorithm=settings.JWT_ALGORITHM,
     )

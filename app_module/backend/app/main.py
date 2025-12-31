@@ -6,9 +6,14 @@ from .modules.users.routes import router as users_router
 
 app = FastAPI(title="Support FJZ Modular API", version="0.1.0")
 
-app.include_router(tickets_router, prefix="/tickets", tags=["tickets"])
-app.include_router(kanban_router, prefix="/kanban", tags=["kanban"])
-app.include_router(users_router, prefix="/users", tags=["users"])
+# 👇 sin middleware de planta por ahora
+# from .core.middleware import PlantGuardMiddleware
+# app.add_middleware(PlantGuardMiddleware)
+
+app.include_router(tickets_router, prefix="/tickets", tags=["Tickets"])
+app.include_router(kanban_router, prefix="/kanban", tags=["Kanban"])
+app.include_router(users_router, prefix="/auth", tags=["Auth"])
 
 register_startup(app)
 register_shutdown(app)
+ 

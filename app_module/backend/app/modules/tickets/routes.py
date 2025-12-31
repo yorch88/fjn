@@ -1,21 +1,30 @@
-from fastapi import APIRouter, Depends, Request
+from typing import List
+from fastapi import APIRouter, Depends
 
 from app.core.security import get_current_user
-from app.shared.utils import ensure_same_plant
-from .service import list_tickets, create_ticket
-
-router = APIRouter(prefix="/tickets", tags=["Tickets"])
+from .models import TicketCreate, TicketOut
+from .service import create_ticket, get_tickets_for_user
 
 
-@router.get("/")
-async def get_all(request: Request, user=Depends(get_current_user)):
-    ensure_same_plant(user, user["id_plant"])
-    return await list_tickets(user["id_plant"])
+router = APIRouter()
 
 
-@router.post("/")
-async def create(request: Request, data: dict, user=Depends(get_current_user)):
-    data["id_plant"] = user["id_plant"]
-    ensure_same_plant(user, data["id_plant"])
-    return await create_ticket(data)
- 
+@router.post("/", response_model=TicketOut)
+async def create_ticket_endpoint(
+    body: TicketCreate,
+    current_user = Depends(get_current_user),
+):
+    """
+    Crea un ticket ligado a la planta del usuario autenticado.
+    """
+    return await create_ticket(body, current_user)
+
+
+@router.get("/", response_model=List[TicketOut])
+async def list_tickets_endpoint(
+    current_user = Depends(get_current_user),
+):
+    """
+    Lista todos los tickets de la planta del usuario autenticado.
+    """
+    return await get_tickets_for_user(current_user)
