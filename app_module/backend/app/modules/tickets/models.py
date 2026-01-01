@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import List, Optional
 from datetime import datetime 
 
 
@@ -24,6 +24,10 @@ class TicketInDB(BaseModel):
     id_plant: str
     created_at: datetime
 
+class Comment(BaseModel):
+    user_clock: str
+    message: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class TicketOut(BaseModel):
     id: str
@@ -33,6 +37,8 @@ class TicketOut(BaseModel):
     status: str
     requester: Optional[str] = None
     id_plant: str
+    comments: List[Comment] = []
     area: Optional[str] = None
     station: Optional[str] = None
     created_at: Optional[datetime] = None
+    

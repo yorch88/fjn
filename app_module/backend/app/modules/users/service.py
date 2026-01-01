@@ -37,6 +37,7 @@ async def login_user(email: str, password: str):
     token = create_token(
         user_id=str(user["_id"]),
         id_plant=user["id_plant"],
+        clock_num=user["clock_num"]
     )
 
     await db.users.update_one(

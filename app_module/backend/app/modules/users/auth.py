@@ -17,17 +17,14 @@ def verify_password(password: str, hashed: str) -> bool:
     return pwd_context.verify(password[:MAX_LEN], hashed)
 
 
-def create_token(user_id: str, id_plant: str, expires_minutes: int = 60) -> str:
-    now = datetime.utcnow()
+def create_token(user_id: str, id_plant: str, clock_num: str) -> str:
     payload = {
-        "sub": user_id,       # 👈 aquí estará el ID de usuario
-        "id_plant": id_plant, # 👈 planta
-        "iat": now,
-        "exp": now + timedelta(minutes=expires_minutes),
+        "sub": user_id,
+        "id_plant": id_plant,
+        "clock_num": str(clock_num),
+        "iat": datetime.utcnow(),
+        "exp": datetime.utcnow() + timedelta(
+        minutes=int(settings.JWT_EXPIRE_MINUTES)),
     }
 
-    return jwt.encode(
-        payload,
-        settings.SECRET_KEY,
-        algorithm=settings.JWT_ALGORITHM,
-    )
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.JWT_ALGORITHM)

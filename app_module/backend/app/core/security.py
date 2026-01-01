@@ -26,11 +26,12 @@ async def get_current_user(
 
     user_id: str | None = payload.get("sub")
     id_plant: str | None = payload.get("id_plant")
-
+    clock_num: str | None = payload.get("clock_num"),
+    
     if not user_id or not id_plant:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token payload",
         )
 
-    return {"id": user_id, "id_plant": id_plant}
+    return {"id": user_id, "id_plant": id_plant, "clock_num": clock_num}

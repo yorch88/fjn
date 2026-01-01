@@ -11,6 +11,7 @@ class Settings(BaseModel):
     # API key si la necesitas para otras cosas
     API_KEY: str | None = os.getenv("API_KEY")
 
+    JWT_EXPIRE_MINUTES: int | None = os.getenv("JWT_EXPIRE_MINUTES")
     # 🔐 JWT
     SECRET_KEY: str = os.getenv("SECRET_KEY", "change-me-in-.env")
     JWT_ALGORITHM: str = os.getenv("JWT_ALGORITHM", "HS256")
