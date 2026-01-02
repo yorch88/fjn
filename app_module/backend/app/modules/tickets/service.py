@@ -3,8 +3,9 @@ from fastapi import HTTPException
 
 from typing import List
 from app.core.db import get_db
-from .models import Ticket, TicketCreate, TicketOut, Comment
+from .models import Ticket, TicketCreate, TicketOut, Comment, TicketUpdate
 from datetime import datetime
+from app.modules.issues.service import get_issue
 
 
 
@@ -50,29 +51,74 @@ async def list_tickets(plant_id: str):
     return tickets
 
 
+async def update_ticket_service(ticket_id: str, data: TicketCreate, user):
+    db = await get_db()
 
+    ticket = await db.tickets.find_one({"_id": ObjectId(ticket_id)})
+    if not ticket:
+        raise HTTPException(404, "Ticket not found")
+
+    updates = {}
+
+    # 🔗 si cambiaron el issue
+    if data.issue_id and data.issue_id != ticket.get("issue_id"):
+        issue = await get_issue(data.issue_id)
+        updates["issue_id"] = data.issue_id
+        updates["assigned_department"] = issue.department
+
+        # historial
+        ticket.setdefault("change_history", [])
+        ticket["change_history"].append({
+            "field": "issue_id",
+            "old": ticket.get("issue_id"),
+            "new": data.issue_id,
+            "changed_by": str(user["clock_num"]),
+            "changed_at": datetime.utcnow(),
+        })
+
+        updates["change_history"] = ticket["change_history"]
+
+    # aplica update
+    await db.tickets.update_one(
+        {"_id": ObjectId(ticket_id)},
+        {"$set": updates}
+    )
+
+    ticket.update(updates)
+    ticket["id"] = str(ticket["_id"])
+    del ticket["_id"]
+
+    return TicketOut(**ticket)
 
 async def create_ticket(data: TicketCreate, user) -> TicketOut:
-    """
-    Crea un ticket para la planta del usuario autenticado.
-    """
     db = await get_db()
+
+    assigned_department = None
+
+    # 🔗 Si viene issue, buscamos el departamento responsable
+    if data.issue_id:
+        issue = await get_issue(data.issue_id)
+        assigned_department = issue.department
+
     doc = {
         "title": data.title,
         "description": data.description,
         "priority": data.priority,
         "status": "open",
-        "requester": user["id"],        # id del usuario que hace la petición
-        "id_plant": user["id_plant"],   # planta tomada del token
+        "requester": user["id"],
+        "id_plant": user["id_plant"],
         "area": data.area,
         "station": data.station,
+        "issue_id": data.issue_id,              # 🔗 guardamos issue
+        "assigned_department": assigned_department,   # 🤖 auto asignación
         "created_at": datetime.utcnow(),
+        "change_history": [],
+        "comments": [],
     }
 
     result = await db.tickets.insert_one(doc)
     doc["id"] = str(result.inserted_id)
 
-    # limpiamos el _id de Mongo para el response
     return TicketOut(**doc)
 
 
@@ -91,3 +137,61 @@ async def get_tickets_for_user(user) -> List[TicketOut]:
         tickets.append(TicketOut(**doc))
 
     return tickets
+
+async def add_history(ticket_id: str, field: str, old, new, user, reason=None):
+    db = await get_db()
+    clock = user["clock_num"]
+    if isinstance(clock, tuple):
+        clock = clock[0]
+    entry = {
+        "field": field,
+        "old_value": str(old) if old is not None else None,
+        "new_value": str(new) if new is not None else None,
+        "changed_by": str(clock),
+        "reason": reason,
+        "created_at": datetime.utcnow(),
+    }
+
+    await db.tickets.update_one(
+        {"_id": ObjectId(ticket_id)},
+        {"$push": {"history": entry}}
+    )
+    
+async def update_ticket_service(ticket_id: str, data: TicketUpdate, user):
+    db = await get_db()
+
+    ticket = await db.tickets.find_one({"_id": ObjectId(ticket_id)})
+    if not ticket:
+        raise HTTPException(404, "Ticket not found")
+
+    if ticket["id_plant"] != user["id_plant"]:
+        raise HTTPException(403, "Forbidden")
+
+    updates = {}
+
+    for field in ["status", "priority", "description", "area", "station"]:
+        new_value = getattr(data, field)
+        if new_value is not None and new_value != ticket.get(field):
+            updates[field] = new_value
+
+            await add_history(
+                ticket_id,
+                field,
+                ticket.get(field),
+                new_value,
+                user,
+                data.reason,
+            )
+
+    if not updates:
+        return {"message": "No changes applied"}
+
+    updates["updated_at"] = datetime.utcnow()
+
+    await db.tickets.update_one(
+        {"_id": ObjectId(ticket_id)},
+        {"$set": updates}
+    )
+
+    return {"message": "Ticket updated"}
+  
