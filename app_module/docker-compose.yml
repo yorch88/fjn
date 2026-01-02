@@ -3,7 +3,7 @@ version: "3.9"
 services:
   frontend:
     build: ./frontend
-    container_name: support-kiosk-frontend
+    container_name: support-app-frontend
     ports:
       - "5173:5173"
     environment:
@@ -17,7 +17,7 @@ services:
 
   backend:
     build: ./backend
-    container_name: support-kiosk-backend
+    container_name: support-app-backend
     env_file:
       - ./backend/.env
     volumes:

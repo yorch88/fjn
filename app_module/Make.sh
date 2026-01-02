@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-PROJECT_NAME="support-kiosk"
+PROJECT_NAME="support-app"
 DOCKER_COMPOSE="docker compose"
 
 SERVICE_FRONTEND="frontend"

@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from .service import register_user, login_user, list_users
 from .models import Users, UserCreate
 
-router = APIRouter(prefix="/auth", tags=["Auth"])
+router = APIRouter(tags=["Auth"]) 
 
 
 @router.post("/register")
