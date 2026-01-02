@@ -6,7 +6,7 @@ class Users(BaseModel):
     name: str
     email: EmailStr
     clock_num: str
-    id_area: str
+    id_department: str
     id_plant: str
 
 
@@ -16,7 +16,7 @@ class UserCreate(BaseModel):
     clock_num: str
     password: str
     position: List[str] = []
-    id_area: str
+    id_department: str
     id_manager: Optional[str] = None
     id_plant: str
 
@@ -28,7 +28,7 @@ class UserDB(BaseModel):
     clock_num: str
     password_hash: str
     position: List[str]
-    id_area: str
+    id_department: str
     id_manager: Optional[str]
     id_plant: str
     last_activity: datetime | None = None

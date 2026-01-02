@@ -12,6 +12,7 @@ class TicketCreate(BaseModel):
     description: Optional[str] = None
     priority: str = "medium"
     area: Optional[str] = None
+    id_department: Optional[str] = None
     station: Optional[str] = None
     issue_id: Optional[str] = None
 
@@ -52,6 +53,9 @@ class TicketOut(BaseModel):
     created_at: Optional[datetime] = None
     history: List[ChangeLog] = []
     issue_id: Optional[str] = None
+    id_department: str
+    assigned_to: str | None = None
+    assignment_history: list[dict] = []
     
 class TicketUpdate(BaseModel):
     status: str | None = None
@@ -60,3 +64,7 @@ class TicketUpdate(BaseModel):
     area: str | None = None
     station: str | None = None
     reason: str | None = None
+
+class AssignBody(BaseModel):
+    user_id: str
+    note: str | None = None

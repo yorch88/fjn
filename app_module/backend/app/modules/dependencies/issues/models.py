@@ -5,7 +5,7 @@ from datetime import datetime
 
 class IssueBase(BaseModel):
     name: str = Field(..., description="Nombre del problema (ej: 'Falla impresora')")
-    department: str = Field(..., description="Departamento responsable (ej: 'Ingeniería de pruebas')")
+    id_department: str = Field(..., description="Departamento responsable (ej: 'Ingeniería de pruebas')")
     description: Optional[str] = Field(None, description="Descripción opcional del issue")
 
 
