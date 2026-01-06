@@ -27,7 +27,7 @@ class EquipmentCreate(BaseModel):
 class EquipmentOut(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
-    
+
     id: str
     id_user: str
 
@@ -74,3 +74,22 @@ class OwnershipHistoryOut(BaseModel):
     owner: str
     from_date: datetime
     to_date: Optional[datetime]
+
+class EquipmentUpdate(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    serial_number: str | None = None
+    part_number: str | None = None
+    family: str | None = None
+    model: str | None = None
+    grade: str | None = None           # SILVER / GOLDEN
+    status: str | None = None          # ACTIVE / INACTIVE
+    consignment_type: str | None = None
+    purchaser: str | None = None
+    current_owner: str | None = None
+    shipped_by: str | None = None
+    usage_hours_limit: float | None = None
+    received_at: datetime | None = None
+    last_recal_date: datetime | None = None
+    next_recal_due_date: datetime | None = None
+    reason: str | None = None          # explicación del cambio

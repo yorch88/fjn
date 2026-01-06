@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends
 from typing import List
 
 from app.core.security import get_current_user
-from .models import EquipmentCreate, EquipmentOut, UsageLogCreate
-from .service import create_equipment, list_equipment, add_usage
+from .models import EquipmentCreate, EquipmentOut, UsageLogCreate, EquipmentUpdate
+from .service import create_equipment, list_equipment, add_usage, update_equipment
 from .reports.general_report import get_report
 
 router = APIRouter()
@@ -31,3 +31,11 @@ async def report(
     current_user = Depends(get_current_user)
 ):
     return await get_report(field, op, value, current_user)
+
+@router.patch("/{equipment_id}")
+async def update_equipment_ep(
+    equipment_id: str,
+    body: EquipmentUpdate,
+    current_user = Depends(get_current_user),
+):
+    return await update_equipment(equipment_id, body, current_user)

@@ -37,7 +37,7 @@ async def get_report(field: str, op: str, value: str | None, user):
         raise HTTPException(400, detail=f"Unsupported field: {field}")
 
     # si pidió “todo”
-    if op == "vacio":
+    if op == "empty":
         cursor = db.inventory_equipment.find(query).sort("created_at", -1)
         return await _collect(cursor)
 

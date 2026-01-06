@@ -122,3 +122,65 @@ async def add_usage(data: UsageLogCreate, user):
     )
 
     return {"message": "Logged"}
+
+
+async def add_equipment_history(equipment_id, field, old, new, user, reason=None):
+    db = await get_db()
+
+    entry = {
+        "field": field,
+        "old_value": old,
+        "new_value": new,
+        "changed_by": str(user["clock_num"]),
+        "reason": reason,
+        "created_at": datetime.utcnow(),
+    }
+
+    await db.inventory_equipment.update_one(
+        {"_id": ObjectId(equipment_id)},
+        {"$push": {"history": entry}}
+    )
+
+
+async def update_equipment(equipment_id: str, data, user):
+    db = await get_db()
+
+    equipment = await db.inventory_equipment.find_one({"_id": ObjectId(equipment_id)})
+    if not equipment:
+        raise HTTPException(404, "Equipment not found")
+
+    # seguridad por planta
+    if equipment["id_plant"] != user["id_plant"]:
+        raise HTTPException(403, "Forbidden")
+
+    updates = {}
+
+    for field, new_value in data.model_dump(exclude_unset=True).items():
+        if field == "reason":
+            continue
+
+        old_value = equipment.get(field)
+
+        if new_value is not None and new_value != old_value:
+            updates[field] = new_value
+
+            await add_equipment_history(
+                equipment_id,
+                field,
+                old_value,
+                new_value,
+                user,
+                data.reason,
+            )
+
+    if not updates:
+        return {"message": "No changes applied"}
+
+    updates["updated_at"] = datetime.utcnow()
+
+    await db.inventory_equipment.update_one(
+        {"_id": ObjectId(equipment_id)},
+        {"$set": updates}
+    )
+
+    return {"message": "Equipment updated"}
