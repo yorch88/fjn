@@ -5,6 +5,7 @@ from .modules.kanban.routes import router as kanban_router
 from .modules.users.routes import router as users_router
 from app.modules.dependencies.issues.routes import router as issues_router
 from app.modules.dependencies.departments.routes import router as department
+from app.modules.inventory.routes import router as inventory_router
 
 app = FastAPI(title="Support FJZ Modular API", version="0.1.0")
 
@@ -17,7 +18,7 @@ app.include_router(kanban_router, prefix="/kanban", tags=["Kanban"])
 app.include_router(users_router, prefix="/auth", tags=["Auth"])
 app.include_router(issues_router)
 app.include_router(department)
-
+app.include_router(inventory_router, prefix="/inventory", tags=["Inventory"])
 register_startup(app)
 register_shutdown(app)
  

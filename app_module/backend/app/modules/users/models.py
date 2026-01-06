@@ -6,8 +6,8 @@ class Users(BaseModel):
     name: str
     email: EmailStr
     clock_num: str
-    id_department: str
-    id_plant: str
+    id_department: Optional[str] = None   # 👈 CAMBIO
+    id_plant: Optional[str] = None        # 👈 RECOMENDADO TAMBIÉN
 
 
 class UserCreate(BaseModel):
@@ -16,9 +16,9 @@ class UserCreate(BaseModel):
     clock_num: str
     password: str
     position: List[str] = []
-    id_department: str
     id_manager: Optional[str] = None
-    id_plant: str
+    id_department: Optional[str] = None 
+    id_plant: Optional[str] = None
 
 
 class UserDB(BaseModel):
@@ -28,7 +28,7 @@ class UserDB(BaseModel):
     clock_num: str
     password_hash: str
     position: List[str]
-    id_department: str
+    id_department: Optional[str] = None 
     id_manager: Optional[str]
-    id_plant: str
+    id_department: Optional[str] = None 
     last_activity: datetime | None = None
