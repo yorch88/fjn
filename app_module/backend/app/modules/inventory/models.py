@@ -5,6 +5,8 @@ from datetime import datetime
 
 
 class EquipmentCreate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
     serial_number: str
     part_number: Optional[str] = None
     family: Optional[str] = None
@@ -23,17 +25,21 @@ class EquipmentCreate(BaseModel):
 
 
 class EquipmentOut(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    
     id: str
-    id_user : str
+    id_user: str
+
     serial_number: str
     part_number: Optional[str]
     family: Optional[str]
     model: Optional[str]
 
     grade: str
-    status: str
-    consignment_type: str
+    status: str = "ACTIVE"                 # 👈 default
 
+    consignment_type: str
     purchaser: Optional[str]
     current_owner: Optional[str]
     shipped_by: Optional[str]
@@ -41,8 +47,8 @@ class EquipmentOut(BaseModel):
     total_usage_hours: float
     usage_hours_limit: float | None
 
-    last_recal_date: Optional[datetime]
-    next_recal_due_date: Optional[datetime]
+    last_recal_date: Optional[datetime] = None      # 👈 optional
+    next_recal_due_date: Optional[datetime] = None  # 👈 optional
 
     created_at: datetime
     updated_at: datetime

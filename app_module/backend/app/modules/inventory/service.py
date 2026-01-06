@@ -20,13 +20,28 @@ def compute_next_recal(grade: str, ref: datetime | None):
 async def create_equipment(data: EquipmentCreate, user):
     db = await get_db()
     now = datetime.utcnow()
+    # 🔎 verificar duplicados
+    exists = await db.inventory_equipment.find_one({
+        "$or": [
+            {"serial_number": data.serial_number},
+            {"part_number": data.part_number}
+        ]
+    })
 
+    if exists:
+        raise HTTPException(
+            status_code=400,
+            detail="Serial number or part number already exists"
+        )
+    
     doc = {
+        "name": data.name,
+        "description": data.description,
         "serial_number": data.serial_number,
         "part_number": data.part_number,
         "family": data.family,
         "model": data.model,
-
+        "status": "ACTIVE",                # 👈 asegurado
         "grade": data.grade,
         "consignment_type": data.consignment_type,
 
@@ -41,6 +56,8 @@ async def create_equipment(data: EquipmentCreate, user):
 
         # 🔐 SIEMPRE SOBREESCRIBIMOS
         "id_user": user["id"],           # 👈 correcto
+        "last_recal_date": None,           # 👈 agregado
+        "next_recal_due_date": None,       # 👈 agregado
         "id_plant": user["id_plant"],    # 👈 crítico
 
         "created_at": now,
