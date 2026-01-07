@@ -8,7 +8,6 @@ from datetime import datetime
 from app.modules.dependencies.issues.service import get_issue
 
 
-
 async def add_comment_to_ticket(ticket_id: str, message: str, current_user):
     db = await get_db()
     tickets_collection = db.tickets
@@ -18,7 +17,7 @@ async def add_comment_to_ticket(ticket_id: str, message: str, current_user):
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
 
-    # 🔐 Seguridad por planta
+    # Plant security
     if ticket["id_plant"] != current_user["id_plant"]:
         raise HTTPException(status_code=403, detail="Forbidden")
 
@@ -60,13 +59,13 @@ async def update_ticket_service(ticket_id: str, data: TicketCreate, user):
 
     updates = {}
 
-    # 🔗 si cambiaron el issue
+    # if the issue changed
     if data.issue_id and data.issue_id != ticket.get("issue_id"):
         issue = await get_issue(data.issue_id)
         updates["issue_id"] = data.issue_id
         updates["assigned_department"] = issue.department
 
-        # historial
+        # history
         ticket.setdefault("change_history", [])
         ticket["change_history"].append({
             "field": "issue_id",
@@ -78,7 +77,7 @@ async def update_ticket_service(ticket_id: str, data: TicketCreate, user):
 
         updates["change_history"] = ticket["change_history"]
 
-    # aplica update
+    # apply update
     await db.tickets.update_one(
         {"_id": ObjectId(ticket_id)},
         {"$set": updates}
@@ -90,12 +89,13 @@ async def update_ticket_service(ticket_id: str, data: TicketCreate, user):
 
     return TicketOut(**ticket)
 
+
 async def create_ticket(data: TicketCreate, user) -> TicketOut:
     db = await get_db()
 
     id_department = data.id_department
 
-    # 🔗 Si viene issue, usamos su departamento como auto-asignación
+    # If issue is provided, use its department as auto-assignment
     if data.issue_id:
         issue = await get_issue(data.issue_id)
         if issue and issue.department:
@@ -110,11 +110,11 @@ async def create_ticket(data: TicketCreate, user) -> TicketOut:
         "requester": user["id"],
         "id_plant": user["id_plant"],
 
-        #"area": data.area,
+        # "area": data.area,
         "station": data.station,
 
         "issue_id": data.issue_id,
-        "id_department": id_department,   # 👈 SOLO ESTE
+        "id_department": id_department,   # only this one
 
         "assigned_to": None,
         "assignment_history": [],
@@ -131,10 +131,9 @@ async def create_ticket(data: TicketCreate, user) -> TicketOut:
     return TicketOut(**doc)
 
 
-
 async def get_tickets_for_user(user) -> List[TicketOut]:
     """
-    Devuelve todos los tickets de la planta del usuario.
+    Returns all tickets for the user's plant.
     """
     db = await get_db()
 
@@ -148,11 +147,13 @@ async def get_tickets_for_user(user) -> List[TicketOut]:
 
     return tickets
 
+
 async def add_history(ticket_id: str, field: str, old, new, user, reason=None):
     db = await get_db()
     clock = user["clock_num"]
     if isinstance(clock, tuple):
         clock = clock[0]
+
     entry = {
         "field": field,
         "old_value": str(old) if old is not None else None,
@@ -166,7 +167,8 @@ async def add_history(ticket_id: str, field: str, old, new, user, reason=None):
         {"_id": ObjectId(ticket_id)},
         {"$push": {"history": entry}}
     )
-    
+
+
 async def update_ticket_service(ticket_id: str, data: TicketUpdate, user):
     db = await get_db()
 
@@ -204,7 +206,8 @@ async def update_ticket_service(ticket_id: str, data: TicketUpdate, user):
     )
 
     return {"message": "Ticket updated"}
-  
+
+
 async def assign_ticket(ticket_id: str, user_id: str, current_user):
     db = await get_db()
     ticket = await db.tickets.find_one({"_id": ObjectId(ticket_id)})

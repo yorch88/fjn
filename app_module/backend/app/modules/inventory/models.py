@@ -12,7 +12,7 @@ class EquipmentCreate(BaseModel):
     family: Optional[str] = None
     model: Optional[str] = None
 
-    id_user: Optional[str] = None      # 👈 opcional — NO confiamos en él
+    # id_user: Optional[str] = None      # optional — we do NOT trust it
     grade: str                 # GOLDEN | SILVER
     consignment_type: str      # JUNIPER / FOXCONN...
 
@@ -37,7 +37,7 @@ class EquipmentOut(BaseModel):
     model: Optional[str]
 
     grade: str
-    status: str = "ACTIVE"                 # 👈 default
+    status: str = "ACTIVE"                 # default value
 
     consignment_type: str
     purchaser: Optional[str]
@@ -47,8 +47,8 @@ class EquipmentOut(BaseModel):
     total_usage_hours: float
     usage_hours_limit: float | None
 
-    last_recal_date: Optional[datetime] = None      # 👈 optional
-    next_recal_due_date: Optional[datetime] = None  # 👈 optional
+    last_recal_date: Optional[datetime] = None      # optional
+    next_recal_due_date: Optional[datetime] = None  # optional
 
     created_at: datetime
     updated_at: datetime
@@ -75,6 +75,7 @@ class OwnershipHistoryOut(BaseModel):
     from_date: datetime
     to_date: Optional[datetime]
 
+
 class EquipmentUpdate(BaseModel):
     name: str | None = None
     description: str | None = None
@@ -92,4 +93,4 @@ class EquipmentUpdate(BaseModel):
     received_at: datetime | None = None
     last_recal_date: datetime | None = None
     next_recal_due_date: datetime | None = None
-    reason: str | None = None          # explicación del cambio
+    reason: str | None = None          # explanation of the change

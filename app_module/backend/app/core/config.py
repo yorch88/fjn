@@ -8,11 +8,12 @@ load_dotenv()
 class Settings(BaseModel):
     APP_ENV: str = os.getenv("APP_ENV", "development")
 
-    # API key si la necesitas para otras cosas
+    # API key if you need it for other purposes
     API_KEY: str | None = os.getenv("API_KEY")
 
     JWT_EXPIRE_MINUTES: int | None = os.getenv("JWT_EXPIRE_MINUTES")
-    # 🔐 JWT
+
+    # JWT
     SECRET_KEY: str = os.getenv("SECRET_KEY", "change-me-in-.env")
     JWT_ALGORITHM: str = os.getenv("JWT_ALGORITHM", "HS256")
 

@@ -3,6 +3,7 @@
 from bson import ObjectId
 from fastapi import HTTPException
 from datetime import datetime, timedelta
+from ..helpers.inventory import calculate_usage_hours
 
 from app.core.db import get_db
 from .models import (
@@ -10,6 +11,7 @@ from .models import (
     EquipmentOut,
     UsageLogCreate,
 )
+
 
 def compute_next_recal(grade: str, ref: datetime | None):
     if grade != "GOLDEN":
@@ -20,13 +22,16 @@ def compute_next_recal(grade: str, ref: datetime | None):
 async def create_equipment(data: EquipmentCreate, user):
     db = await get_db()
     now = datetime.utcnow()
-    # 🔎 verificar duplicados
+
+    # check duplicates
     exists = await db.inventory_equipment.find_one({
         "$or": [
             {"serial_number": data.serial_number},
             {"part_number": data.part_number}
         ]
     })
+
+    usage_hours = calculate_usage_hours(data.received_at)
 
     if exists:
         raise HTTPException(
@@ -41,7 +46,7 @@ async def create_equipment(data: EquipmentCreate, user):
         "part_number": data.part_number,
         "family": data.family,
         "model": data.model,
-        "status": "ACTIVE",                # 👈 asegurado
+        "status": "ACTIVE",                # ensured
         "grade": data.grade,
         "consignment_type": data.consignment_type,
 
@@ -49,16 +54,16 @@ async def create_equipment(data: EquipmentCreate, user):
         "current_owner": data.current_owner,
         "shipped_by": data.shipped_by,
 
-        "total_usage_hours": 0,
+        "total_usage_hours": usage_hours,
         "usage_hours_limit": data.usage_hours_limit if data.grade == "SILVER" else None,
 
         "received_at": data.received_at or now,
 
-        # 🔐 SIEMPRE SOBREESCRIBIMOS
-        "id_user": user["id"],           # 👈 correcto
-        "last_recal_date": None,           # 👈 agregado
-        "next_recal_due_date": None,       # 👈 agregado
-        "id_plant": user["id_plant"],    # 👈 crítico
+        # we ALWAYS override
+        "id_user": user["id"],            # correct
+        "last_recal_date": None,          # added
+        "next_recal_due_date": None,      # added
+        "id_plant": user["id_plant"],     # critical
 
         "created_at": now,
         "updated_at": now,
@@ -74,7 +79,7 @@ async def list_equipment(user):
     db = await get_db()
 
     cursor = db.inventory_equipment.find({
-        "id_plant": user["id_plant"]   # 👈 critical
+        "id_plant": user["id_plant"]   # critical
     }).sort("created_at", -1)
 
     items = []
@@ -84,6 +89,7 @@ async def list_equipment(user):
         items.append(doc)
 
     return items
+
 
 async def add_usage(data: UsageLogCreate, user):
     db = await get_db()
@@ -149,7 +155,7 @@ async def update_equipment(equipment_id: str, data, user):
     if not equipment:
         raise HTTPException(404, "Equipment not found")
 
-    # seguridad por planta
+    # plant-level security
     if equipment["id_plant"] != user["id_plant"]:
         raise HTTPException(403, "Forbidden")
 

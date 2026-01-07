@@ -9,7 +9,6 @@ from app.core.db import get_db
 async def register_user(data: UserCreate):
     db = await get_db()
 
-    # ¿email ya registrado?
     exists = await db.users.find_one({"email": data.email})
     if exists:
         raise HTTPException(status_code=400, detail="Email already registered")

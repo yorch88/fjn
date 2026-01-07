@@ -6,8 +6,8 @@ class Users(BaseModel):
     name: str
     email: EmailStr
     clock_num: str
-    id_department: Optional[str] = None   # 👈 CAMBIO
-    id_plant: Optional[str] = None        # 👈 RECOMENDADO TAMBIÉN
+    id_department: Optional[str] = None
+    id_plant: Optional[str] = None
 
 
 class UserCreate(BaseModel):

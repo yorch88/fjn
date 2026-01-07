@@ -8,7 +8,7 @@ PUBLIC_PATHS = [
     "/auth/register",
     "/tickets/public",
 
-    # ⭐ Rutas internas de FastAPI / Swagger
+    # Internal FastAPI / Swagger routes
     "/docs",
     "/openapi.json",
     "/redoc",
@@ -19,7 +19,7 @@ class PlantGuardMiddleware(BaseHTTPMiddleware):
 
         path = request.url.path
 
-        # 👉 Si la ruta está permitida, no revisamos token
+        # If the route is allowed, we do not check the token
         if any(path.startswith(p) for p in PUBLIC_PATHS):
             return await call_next(request)
 

@@ -32,10 +32,10 @@ class Comment(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class ChangeLog(BaseModel):
-    field: str                  # ejemplo: "status", "priority"
+    field: str
     old_value: str | None = None
     new_value: str | None = None
-    changed_by: str             # clock del usuario
+    changed_by: str
     reason: str | None = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 

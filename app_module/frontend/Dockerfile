@@ -2,12 +2,10 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copiamos manifiestos primero para aprovechar cache de dependencias
 COPY package.json package-lock.json* ./
 
 RUN npm install
 
-# Copiamos el resto del código
 COPY . .
 
 ENV HOST=0.0.0.0

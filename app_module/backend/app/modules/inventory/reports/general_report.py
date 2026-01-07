@@ -22,27 +22,27 @@ ALLOWED_FIELDS = {
     "created_clock",
     "current_owner",
     "consignment_type",
-    "name",   # alias opcional
+    "name",   # optional alias
 } | DATE_FIELDS
 
 
 async def get_report(field: str, op: str, value: str | None, user):
     db = await get_db()
 
-    # seguridad por planta
+    # plant-level security
     query = {"id_plant": user["id_plant"]}
 
-    # validar campo
+    # validate field
     if field not in ALLOWED_FIELDS:
         raise HTTPException(400, detail=f"Unsupported field: {field}")
 
-    # si pidió “todo”
+    # request for "everything"
     if op == "empty":
         cursor = db.inventory_equipment.find(query).sort("created_at", -1)
         return await _collect(cursor)
 
     # =============================
-    #      FILTROS DE FECHA
+    #          DATE FILTERS
     # =============================
     if field in DATE_FIELDS:
         if not value:
@@ -68,11 +68,11 @@ async def get_report(field: str, op: str, value: str | None, user):
             raise HTTPException(400, detail="Operator not supported for dates")
 
     # =============================
-    #      STRINGS / NUMÉRICOS
+    #     STRINGS / NUMERIC
     # =============================
     else:
 
-        # alias: name → busca en name OR description
+        # alias: name → search in name OR description
         if field == "name" and op == "contains":
             query["$or"] = [
                 {"name": {"$regex": value, "$options": "i"}},
@@ -102,7 +102,7 @@ async def get_report(field: str, op: str, value: str | None, user):
 
 
 async def _collect(cursor):
-    """Convierte cursor Mongo → lista segura (nunca null)."""
+    """Converts Mongo cursor to safe list (never null)."""
     results = []
 
     async for doc in cursor:
