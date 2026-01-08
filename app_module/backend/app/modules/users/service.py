@@ -1,7 +1,7 @@
 from datetime import datetime
 from fastapi import HTTPException
 
-from .models import Users, UserCreate
+from .models import Users, UserCreate, LoginRequest
 from .auth import hash_password, verify_password, create_token
 from app.core.db import get_db
 
@@ -23,14 +23,14 @@ async def register_user(data: UserCreate):
     return {"id": str(result.inserted_id)}
 
 
-async def login_user(email: str, password: str):
+async def login_user(data: LoginRequest):
     db = await get_db()
 
-    user = await db.users.find_one({"email": email})
+    user = await db.users.find_one({"email": data.email})
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    if not verify_password(password, user["password_hash"]):
+    if not verify_password(data.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     token = create_token(

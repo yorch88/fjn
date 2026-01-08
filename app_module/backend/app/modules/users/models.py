@@ -29,6 +29,10 @@ class UserDB(BaseModel):
     password_hash: str
     position: List[str]
     id_department: Optional[str] = None 
-    id_manager: Optional[str]
-    id_department: Optional[str] = None 
+    id_manager: Optional[str] = None
+    id_plant: Optional[str] = None
     last_activity: datetime | None = None
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str

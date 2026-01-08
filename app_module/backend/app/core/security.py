@@ -4,6 +4,7 @@ from jose import jwt, JWTError
 
 from app.core.config import settings
 from ..modules.helpers.users import normalize_clock
+from ..modules.users.auth import is_token_blacklisted
 
 security = HTTPBearer()
 

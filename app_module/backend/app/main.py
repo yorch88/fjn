@@ -6,11 +6,28 @@ from .modules.users.routes import router as users_router
 from app.modules.dependencies.issues.routes import router as issues_router
 from app.modules.dependencies.departments.routes import router as department
 from app.modules.inventory.routes import router as inventory_router
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Support FJZ Modular API", version="0.1.0")
 
 # from .core.middleware import PlantGuardMiddleware
 # app.add_middleware(PlantGuardMiddleware)
+
+
+origins = [
+    "http://localhost:3000",   # React / Next
+    "http://localhost:5173",   # Vite
+    "http://localhost:4200",   # Angular
+    "http://127.0.0.1:8000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(tickets_router, prefix="/tickets", tags=["Tickets"])
 app.include_router(kanban_router, prefix="/kanban", tags=["Kanban"])
