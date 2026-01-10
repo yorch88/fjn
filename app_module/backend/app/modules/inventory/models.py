@@ -30,6 +30,7 @@ class EquipmentOut(BaseModel):
 
     id: str
     id_user: str
+    location_id: Optional[str] = None
 
     serial_number: str
     part_number: Optional[str]
@@ -93,4 +94,5 @@ class EquipmentUpdate(BaseModel):
     received_at: datetime | None = None
     last_recal_date: datetime | None = None
     next_recal_due_date: datetime | None = None
+    location_id: str | None = None
     reason: str | None = None          # explanation of the change

@@ -6,6 +6,8 @@ from .modules.users.routes import router as users_router
 from app.modules.dependencies.issues.routes import router as issues_router
 from app.modules.dependencies.departments.routes import router as department
 from app.modules.inventory.routes import router as inventory_router
+from app.modules.dependencies.locations.routes import router as locations_router
+
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Support FJZ Modular API", version="0.1.0")
@@ -35,6 +37,8 @@ app.include_router(users_router, prefix="/auth", tags=["Auth"])
 app.include_router(issues_router)
 app.include_router(department)
 app.include_router(inventory_router, prefix="/inventory", tags=["Inventory"])
+app.include_router(locations_router)
+
 register_startup(app)
 register_shutdown(app)
  

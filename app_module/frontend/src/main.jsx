@@ -11,6 +11,8 @@ import RequireAuth from "./modules/auth/RequireAuth.jsx";
 import InventoryReports from "./modules/inventory/pages/InventoryReports.jsx";
 import InventoryCreate from "./modules/inventory/pages/InventoryCreate.jsx";
 import InventoryUpdate from "./modules/inventory/pages/InventoryUpdate.jsx";
+import InventorySilverHours from "./modules/inventory/pages/InventorySilverHours";
+
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -47,7 +49,15 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             </RequireAuth>
           }
         />
-      </Routes>
+        <Route
+          path="/inventory/silver-hours"
+          element={
+            <RequireAuth>
+              <InventorySilverHours />
+            </RequireAuth>
+          }
+        />
+      </Routes>  
     </BrowserRouter>
   </React.StrictMode>
 );

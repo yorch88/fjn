@@ -86,3 +86,34 @@ export async function updateEquipment(id, payload) {
 
   return res.json();
 }
+export async function getSilverHoursReport(threshold = 50) {
+  const HOST = import.meta.env.VITE_API_HOST;
+  const PORT = import.meta.env.VITE_API_PORT;
+  const API = `http://${HOST}:${PORT}`;
+
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(
+    `${API}/inventory/report/silver-hours?threshold=${threshold}`,
+    {
+      headers: {
+        alert: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (res.status === 401) {
+    localStorage.removeItem("token");
+    localStorage.setItem("redirect_after_login", "/inventory/silver-hours");
+    window.location.href = "/login";
+    return [];
+  }
+
+  if (!res.ok) {
+    throw new Error("Failed to load silver hours report");
+  }
+
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
+}

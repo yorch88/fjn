@@ -10,6 +10,7 @@ from .models import (
     EquipmentCreate,
     EquipmentOut,
     UsageLogCreate,
+    EquipmentUpdate
 )
 
 
@@ -148,45 +149,28 @@ async def add_equipment_history(equipment_id, field, old, new, user, reason=None
     )
 
 
-async def update_equipment(equipment_id: str, data, user):
+async def update_equipment(equipment_id: str, body: EquipmentUpdate, user):
     db = await get_db()
 
-    equipment = await db.inventory_equipment.find_one({"_id": ObjectId(equipment_id)})
-    if not equipment:
-        raise HTTPException(404, "Equipment not found")
+    payload = body.model_dump(exclude_unset=True)
 
-    # plant-level security
-    if equipment["id_plant"] != user["id_plant"]:
-        raise HTTPException(403, "Forbidden")
+    if not payload:
+        raise HTTPException(400, detail="No fields to update")
 
-    updates = {}
+    payload["updated_at"] = datetime.utcnow()
 
-    for field, new_value in data.model_dump(exclude_unset=True).items():
-        if field == "reason":
-            continue
-
-        old_value = equipment.get(field)
-
-        if new_value is not None and new_value != old_value:
-            updates[field] = new_value
-
-            await add_equipment_history(
-                equipment_id,
-                field,
-                old_value,
-                new_value,
-                user,
-                data.reason,
-            )
-
-    if not updates:
-        return {"message": "No changes applied"}
-
-    updates["updated_at"] = datetime.utcnow()
-
-    await db.inventory_equipment.update_one(
-        {"_id": ObjectId(equipment_id)},
-        {"$set": updates}
+    result = await db.inventory.update_one(
+        {
+            "_id": ObjectId(equipment_id),
+            "id_plant": user["id_plant"],
+        },
+        {"$set": payload},
     )
 
-    return {"message": "Equipment updated"}
+    if result.matched_count == 0:
+        raise HTTPException(404, detail="Equipment not found")
+
+    doc = await db.inventory.find_one({"_id": ObjectId(equipment_id)})
+    doc["id"] = str(doc["_id"])
+
+    return EquipmentOut(**doc)

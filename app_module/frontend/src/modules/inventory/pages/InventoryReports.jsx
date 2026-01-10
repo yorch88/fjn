@@ -39,13 +39,19 @@ export default function InventoryReports() {
         <h1 className="text-xl font-semibold tracking-tight">
           Inventory Reports
         </h1>
-
+        <button
+          onClick={() => navigate("/inventory/silver-hours")}
+          className="text-sm text-indigo-400 hover:text-indigo-300"
+        >
+          Silver hours report
+        </button>
         <button
           onClick={() => navigate("/inventory/new")}
           className="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-md text-sm"
         >
           Create equipment
         </button>
+        
       </header>
 
       <main className="flex-1 px-6 py-4">
