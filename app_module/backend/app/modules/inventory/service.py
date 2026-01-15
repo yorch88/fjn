@@ -4,6 +4,7 @@ from bson import ObjectId
 from fastapi import HTTPException
 from datetime import datetime, timedelta
 from ..helpers.inventory import calculate_usage_hours
+from ..helpers.mongo import normalize_mongo_doc
 
 from app.core.db import get_db
 from .models import (
@@ -59,7 +60,7 @@ async def create_equipment(data: EquipmentCreate, user):
         "usage_hours_limit": data.usage_hours_limit if data.grade == "SILVER" else None,
 
         "received_at": data.received_at or now,
-
+        "location_id": ObjectId(data.location_id) if data.location_id else None,
         # we ALWAYS override
         "id_user": user["id"],            # correct
         "last_recal_date": None,          # added
@@ -73,6 +74,9 @@ async def create_equipment(data: EquipmentCreate, user):
     result = await db.inventory_equipment.insert_one(doc)
 
     doc["id"] = str(result.inserted_id)
+
+    doc = normalize_mongo_doc(doc)
+
     return EquipmentOut(**doc)
 
 
@@ -80,16 +84,21 @@ async def list_equipment(user):
     db = await get_db()
 
     cursor = db.inventory_equipment.find({
-        "id_plant": user["id_plant"]   # critical
+        "id_plant": user["id_plant"]
     }).sort("created_at", -1)
 
     items = []
+
     async for doc in cursor:
         doc["id"] = str(doc["_id"])
         del doc["_id"]
+
+        doc = normalize_mongo_doc(doc)
+
         items.append(doc)
 
     return items
+
 
 
 async def add_usage(data: UsageLogCreate, user):
@@ -159,7 +168,7 @@ async def update_equipment(equipment_id: str, body: EquipmentUpdate, user):
 
     payload["updated_at"] = datetime.utcnow()
 
-    result = await db.inventory.update_one(
+    result = await db.inventory_equipment.update_one(
         {
             "_id": ObjectId(equipment_id),
             "id_plant": user["id_plant"],
@@ -170,7 +179,82 @@ async def update_equipment(equipment_id: str, body: EquipmentUpdate, user):
     if result.matched_count == 0:
         raise HTTPException(404, detail="Equipment not found")
 
-    doc = await db.inventory.find_one({"_id": ObjectId(equipment_id)})
+    doc = await db.inventory_equipment.find_one(
+        {"_id": ObjectId(equipment_id)}
+    )
+
     doc["id"] = str(doc["_id"])
+    del doc["_id"]
+
+    doc = normalize_mongo_doc(doc)
 
     return EquipmentOut(**doc)
+
+
+async def move_equipment(equipment_id: str, location_id: str, user):
+    db = await get_db()
+
+    equipment_oid = ObjectId(equipment_id)
+    location_oid = ObjectId(location_id)
+
+    equipment = await db.inventory_equipment.find_one({
+        "_id": equipment_oid,
+        "id_plant": user["id_plant"]
+    })
+
+    if not equipment:
+        raise HTTPException(404, "Equipment not found")
+
+    location = await db.inventory_locations.find_one({
+    "_id": ObjectId(location_id),
+    "id_plant": user["id_plant"],
+    "active": {"$ne": False}
+    })
+
+    if not location:
+        raise HTTPException(404, "Location not found")
+
+    # ---------- CAPACITY CHECK ----------
+
+    capacity = location.get("capacity")
+
+    if capacity is not None:
+        current_count = await db.inventory_equipment.count_documents({
+            "location_id": location_id,
+            "id_plant": user["id_plant"]
+        })
+
+        if current_count >= capacity:
+            raise HTTPException(
+                status_code=400,
+                detail="Location capacity exceeded"
+            )
+
+    # ---------- MOVE ----------
+
+    old_location = equipment.get("location_id")
+
+    await db.inventory_equipment.update_one(
+        {"_id": equipment_oid},
+        {
+            "$set": {
+                "location_id": location_oid,
+                "updated_at": datetime.utcnow()
+            }
+        }
+    )
+
+    # ---------- HISTORY ----------
+
+    history = {
+        "equipment_id": equipment_oid,
+        "from_location": old_location,
+        "to_location": location_oid,
+        "moved_by": user["clock_num"],
+        "moved_at": datetime.utcnow(),
+        "id_plant": user["id_plant"]
+    }
+
+    await db.inventory_location_history.insert_one(history)
+
+    return {"detail": "Equipment moved successfully"}

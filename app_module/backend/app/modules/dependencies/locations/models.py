@@ -2,17 +2,20 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
+
 class LocationBase(BaseModel):
     zone: str
     aisle: str
     rack: str
     level: str
-    position: str
+    position: Optional[str] = None
     description: str = ""
     capacity: Optional[int] = None
 
+
 class LocationCreate(LocationBase):
     pass
+
 
 class LocationUpdate(BaseModel):
     zone: Optional[str] = None
@@ -22,9 +25,11 @@ class LocationUpdate(BaseModel):
     position: Optional[str] = None
     description: Optional[str] = None
     capacity: Optional[int] = None
+    active: Optional[bool] = None
+
 
 class LocationOut(LocationBase):
     id: str
     id_plant: str
     created_at: datetime
-    updated_at: datetime
+    updated_at: Optional[datetime] = None

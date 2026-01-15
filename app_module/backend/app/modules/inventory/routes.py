@@ -3,9 +3,12 @@ from typing import List
 
 from app.core.security import get_current_user
 from .models import EquipmentCreate, EquipmentOut, UsageLogCreate, EquipmentUpdate
-from .service import create_equipment, list_equipment, add_usage, update_equipment
+from .service import create_equipment, list_equipment, add_usage, update_equipment, move_equipment
 from .reports.general_report import get_report
 from .reports.silver_report import get_silver_hours_report
+from .models import LocationCreate, LocationOut, EquipmentMove
+from .locations_service import create_location, list_locations, disable_location
+
 
 router = APIRouter()
 
@@ -47,3 +50,13 @@ async def silver_hours_report(
     current_user = Depends(get_current_user),
 ):
     return await get_silver_hours_report(current_user, threshold)
+
+
+
+@router.patch("/{equipment_id}/move")
+async def move_equipment_ep(
+    equipment_id: str,
+    body: EquipmentMove,
+    current_user = Depends(get_current_user),
+):
+    return await move_equipment(equipment_id, body.location_id, current_user)

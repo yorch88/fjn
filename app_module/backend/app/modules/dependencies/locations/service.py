@@ -3,7 +3,7 @@ from bson import ObjectId
 from fastapi import HTTPException
 from app.core.db import get_db
 
-COLL = "locations"
+COLL = "inventory_locations"
 
 def _oid(id: str) -> ObjectId:
     try:
@@ -34,6 +34,7 @@ async def create_location(payload, user):
         "id_plant": user["id_plant"],
         "created_at": now,
         "updated_at": now,
+        "active": True,
     })
 
     try:

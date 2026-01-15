@@ -6,6 +6,7 @@ from datetime import datetime
 
 class EquipmentCreate(BaseModel):
     name: Optional[str] = None
+    location_id: Optional[str] = None
     description: Optional[str] = None
     serial_number: str
     part_number: Optional[str] = None
@@ -94,5 +95,31 @@ class EquipmentUpdate(BaseModel):
     received_at: datetime | None = None
     last_recal_date: datetime | None = None
     next_recal_due_date: datetime | None = None
-    location_id: str | None = None
+    location_id: Optional[str] = None
     reason: str | None = None          # explanation of the change
+
+# -------- LOCATIONS --------
+
+class LocationCreate(BaseModel):
+    code: str                    # RACK-A-01
+    zone: Optional[str] = None
+    aisle: Optional[str] = None
+    rack: Optional[str] = None
+    level: Optional[str] = None
+    capacity: Optional[int] = None
+
+
+class LocationOut(BaseModel):
+    id: str
+    code: str
+    zone: Optional[str]
+    aisle: Optional[str]
+    rack: Optional[str]
+    level: Optional[str]
+    capacity: Optional[int]
+    active: bool
+    created_at: datetime
+
+class EquipmentMove(BaseModel):
+    location_id: str
+    reason: Optional[str] = None
