@@ -7,6 +7,7 @@ from ..helpers.mongo import normalize_mongo_doc
 
 async def create_location(data, user):
     db = await get_db()
+    now = datetime.utcnow()
 
     exists = await db.inventory_locations.find_one({
         "code": data.code,
@@ -22,11 +23,17 @@ async def create_location(data, user):
         "aisle": data.aisle,
         "rack": data.rack,
         "level": data.level,
+
+        "position": data.position or "",   # ✅ REQUIRED BY MODEL
+
         "capacity": data.capacity,
 
         "active": True,
+
         "id_plant": user["id_plant"],
-        "created_at": datetime.utcnow()
+
+        "created_at": now,
+        "updated_at": now                # ✅ REQUIRED BY MODEL
     }
 
     result = await db.inventory_locations.insert_one(doc)

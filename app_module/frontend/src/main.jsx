@@ -12,6 +12,8 @@ import InventoryReports from "./modules/inventory/pages/InventoryReports.jsx";
 import InventoryCreate from "./modules/inventory/pages/InventoryCreate.jsx";
 import InventoryUpdate from "./modules/inventory/pages/InventoryUpdate.jsx";
 import InventorySilverHours from "./modules/inventory/pages/InventorySilverHours";
+import LocationsList from "./modules/locations/pages/LocationsList.jsx";
+import LocationCreate from "./modules/locations/pages/LocationCreate.jsx";
 
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -57,6 +59,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             </RequireAuth>
           }
         />
+        <Route path="/locations" element={<LocationsList />} />
+        <Route path="/locations/create" element={<LocationCreate />} />
       </Routes>  
     </BrowserRouter>
   </React.StrictMode>

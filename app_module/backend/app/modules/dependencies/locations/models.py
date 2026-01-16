@@ -11,7 +11,7 @@ class LocationBase(BaseModel):
     position: Optional[str] = None
     description: str = ""
     capacity: Optional[int] = None
-
+    active: Optional[bool] = None
 
 class LocationCreate(LocationBase):
     pass
@@ -33,3 +33,4 @@ class LocationOut(LocationBase):
     id_plant: str
     created_at: datetime
     updated_at: Optional[datetime] = None
+    active: Optional[bool] = None

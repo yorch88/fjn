@@ -208,7 +208,7 @@ async def move_equipment(equipment_id: str, location_id: str, user):
     location = await db.inventory_locations.find_one({
     "_id": ObjectId(location_id),
     "id_plant": user["id_plant"],
-    "active": {"$ne": False}
+    "active": {"$ne": True}
     })
 
     if not location:
