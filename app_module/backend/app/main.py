@@ -7,6 +7,7 @@ from app.modules.dependencies.issues.routes import router as issues_router
 from app.modules.dependencies.departments.routes import router as department
 from app.modules.inventory.routes import router as inventory_router
 from app.modules.dependencies.locations.routes import router as locations_router
+from app.modules.tasks_admin.routes import router as tasks_routers
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -38,6 +39,7 @@ app.include_router(issues_router)
 app.include_router(department)
 app.include_router(inventory_router, prefix="/inventory", tags=["Inventory"])
 app.include_router(locations_router)
+app.include_router(tasks_routers)
 
 register_startup(app)
 register_shutdown(app)
