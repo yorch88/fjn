@@ -27,6 +27,8 @@ services:
     depends_on:
       - mongo
       - redis
+    environment:
+      - TZ=America/Mexico_City
     command: sh -c "./entrypoint.sh"
 
   mongo:
@@ -36,6 +38,8 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+    environment:
+      - TZ=America/Mexico_City
 
   redis:
     image: redis:7
@@ -53,6 +57,7 @@ services:
     environment:
       - REDIS_URL=redis://redis:6379/0
       - MONGO_URL=mongodb://mongo:27017/support
+      - TZ=America/Mexico_City
     volumes:
       - ./backend:/app
 

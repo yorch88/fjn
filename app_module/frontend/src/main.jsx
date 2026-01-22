@@ -14,7 +14,9 @@ import InventoryUpdate from "./modules/inventory/pages/InventoryUpdate.jsx";
 import InventorySilverHours from "./modules/inventory/pages/InventorySilverHours";
 import LocationsList from "./modules/locations/pages/LocationsList.jsx";
 import LocationCreate from "./modules/locations/pages/LocationCreate.jsx";
-
+import TasksCreate from "./modules/tasks/pages/TasksCreate.jsx";
+import TasksReports from "./modules/tasks/pages/TasksReports.jsx";
+import TasksDetail from "./modules/tasks/pages/TasksDetail.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -56,6 +58,30 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           element={
             <RequireAuth>
               <InventorySilverHours />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/task/create"
+          element={
+            <RequireAuth>
+              <TasksCreate />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/task/all"
+          element={
+            <RequireAuth>
+              <TasksReports />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/tasks/:id"
+          element={
+            <RequireAuth>
+              <TasksDetail />
             </RequireAuth>
           }
         />

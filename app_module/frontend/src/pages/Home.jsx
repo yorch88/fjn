@@ -35,6 +35,13 @@ export default function Home() {
         >
           Andon
         </button>
+
+        <button
+          className="bg-slate-900 border border-slate-700 rounded-xl p-6 hover:bg-slate-800"
+          onClick={() => go("/task/all")}
+        >
+          Tasks
+        </button>
       </div>
     </div>
   );

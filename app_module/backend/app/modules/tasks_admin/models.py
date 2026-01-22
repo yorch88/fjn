@@ -27,9 +27,14 @@ class TaskEventOut(BaseModel):
     type: str
     created_at: datetime
 
+    # For comment event
+    message: Optional[str] = None
+
+    # For move / close events
+    comment: Optional[str] = None
+
     from_department_id: Optional[str] = None
     to_department_id: Optional[str] = None
-    message: Optional[str] = None
 
 class TaskOut(BaseModel):
 
@@ -57,3 +62,10 @@ class TaskOut(BaseModel):
 
 class TaskETAUpdate(BaseModel):
     eta_at: datetime
+
+class MoveTaskPayload(BaseModel):
+    to_department_id: str
+    comment: Optional[str] = None
+
+class CloseTaskPayload(BaseModel):
+    comment: Optional[str] = None
