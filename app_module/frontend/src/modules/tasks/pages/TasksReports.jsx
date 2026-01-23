@@ -25,11 +25,21 @@ export default function TasksReports() {
     load();
   }, []);
 
-  async function handleClose(taskId) {
-    if (!window.confirm("Close this task?")) return;
+  // ======================
+  // CLOSE TASK (WITH COMMENT)
+  // ======================
 
-    await closeTask(taskId);
-    load();
+  async function handleClose(taskId) {
+    const comment = prompt("Close reason:");
+
+    if (comment === null) return;
+
+    try {
+      await closeTask(taskId, { comment });
+      load();
+    } catch (err) {
+      alert(err.message);
+    }
   }
 
   if (loading) {
