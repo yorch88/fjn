@@ -1,0 +1,57 @@
+services:
+
+  frontend:
+    build: ./frontend
+    container_name: support-app-frontend
+    environment:
+      - NODE_ENV=production
+    ports:
+      - "8080:80"
+    command: sh -c "npm run build && npx serve -s dist -l 80"
+
+  backend:
+    build: ./backend
+    container_name: support-app-backend
+    env_file:
+      - ./backend/.env.prod
+
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+    command: >
+      sh -c "uvicorn app.main:app
+      --host 0.0.0.0
+      --port 8000
+      --workers 2"
+
+  mongo:
+    image: mongo:7
+    container_name: support-mongo
+    restart: always
+
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+
+    ports:
+      - "27018:27017"
+
+    volumes:
+      - mongo_data_prod:/data/db
+
+    healthcheck:
+      test: ["CMD", "mongosh", "-u", "root", "-p", "rootpassword", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7
+    container_name: support-redis
+
+
+volumes:
+  mongo_data_prod:

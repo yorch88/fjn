@@ -1,9 +1,7 @@
-const HOST = import.meta.env.VITE_API_HOST;
-const PORT = import.meta.env.VITE_API_PORT;
-const PROTOCOL = import.meta.env.VITE_API_PROTOCOL || "http";
+const API_URL = import.meta.env.VITE_API_BASE_URL;
 
-if (!HOST || !PORT) {
-  console.error("❌ API env vars missing");
+if (!API_URL) {
+  console.error("❌ VITE_API_BASE_URL is missing");
 }
 
-export const API_URL = `${PROTOCOL}://${HOST}:${PORT}`;
+export { API_URL };

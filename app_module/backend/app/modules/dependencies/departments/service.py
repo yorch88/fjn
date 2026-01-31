@@ -10,7 +10,7 @@ async def create_department(data: DepartmentCreate) -> DepartmentOut:
 
     existing = await db.departments.find_one({"name": doc["name"]})
     if existing:
-        raise ValueError("El departamento ya existe")
+        raise ValueError("Department already Exist")
 
     result = await db.departments.insert_one(doc)
     doc["id"] = str(result.inserted_id)

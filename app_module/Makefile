@@ -7,6 +7,8 @@ SERVICE_BACKEND = backend
 SERVICE_CELERY = celery
 SERVICE_MONGO = mongo
 SERVICE_REDIS = redis
+COMPOSE_DEV = docker-compose
+COMPOSE_PROD = docker-compose -f docker-compose.yml -f docker-compose.prod.yml
 
 .PHONY: help up down restart build logs ps \
         shell-frontend shell-backend shell-mongo shell-redis \
@@ -54,10 +56,10 @@ help:
 	@echo ""
 
 up:
-	$(DOCKER_COMPOSE) up -d
+	$(COMPOSE_DEV) up -d
 
 down:
-	$(DOCKER_COMPOSE) down
+	$(COMPOSE_DEV) down
 
 restart: down up
 
@@ -118,3 +120,26 @@ npm-install:
 
 npm-ci:
 	$(DOCKER_COMPOSE) run --rm $(SERVICE_FRONTEND) npm ci
+up_prod:
+	$(COMPOSE_PROD) up -d
+
+down_prod:
+	$(COMPOSE_PROD) down
+
+down_prod_clean:
+	$(COMPOSE_PROD) down -v
+
+build_prod:
+	$(COMPOSE_PROD) build
+
+rebuild_prod:
+	$(COMPOSE_PROD) build --no-cache
+
+logs_prod:
+	$(COMPOSE_PROD) logs -f
+
+shell-mongo-dev:
+	$(COMPOSE_DEV) exec mongo mongosh
+
+shell-mongo-prod:
+	$(COMPOSE_PROD) exec mongo mongosh -u root -p rootpassword --authenticationDatabase admin

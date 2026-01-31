@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from .service import register_user, login_user, list_users
 from .models import Users, UserCreate, LoginRequest
 from app.core.security import security

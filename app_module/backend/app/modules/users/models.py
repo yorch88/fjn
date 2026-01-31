@@ -1,6 +1,8 @@
 from pydantic import BaseModel, EmailStr
-from typing import List, Optional
+from typing import List, Optional, Literal
 from datetime import datetime
+
+Role = Literal["admin", "superadmin", "viewer", "editor"]
 
 class Users(BaseModel):
     name: str
@@ -8,6 +10,7 @@ class Users(BaseModel):
     clock_num: str
     id_department: Optional[str] = None
     id_plant: Optional[str] = None
+    level: List[Role] = ["viewer"]
 
 
 class UserCreate(BaseModel):
@@ -19,6 +22,7 @@ class UserCreate(BaseModel):
     id_manager: Optional[str] = None
     id_department: Optional[str] = None 
     id_plant: Optional[str] = None
+    level: List[Role] = ["viewer"]
 
 
 class UserDB(BaseModel):
@@ -31,6 +35,7 @@ class UserDB(BaseModel):
     id_department: Optional[str] = None 
     id_manager: Optional[str] = None
     id_plant: Optional[str] = None
+    level: List[Role] = ["viewer"]
     last_activity: datetime | None = None
 
 class LoginRequest(BaseModel):
