@@ -67,3 +67,8 @@ class ReceivingItemOut(BaseModel):
     status: str
     created_at: datetime
 
+class ReceivingItemUpdate(BaseModel):
+    serial_number: Optional[str] = None
+    asset_tag: Optional[str] = None
+    quantity: Optional[int] = None
+    description: Optional[str] = None

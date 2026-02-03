@@ -17,23 +17,19 @@ def verify_password(password: str, hashed: str) -> bool:
     return pwd_context.verify(password[:MAX_LEN], hashed)
 
 
-def create_token(user_id: str, id_plant: str, clock_num: str) -> str:
+def create_token(user_id: str, id_plant: str, clock_num: str,  level: list[str]) -> str:
     payload = {
         "sub": user_id,
         "id_plant": id_plant,
         "clock_num": str(clock_num),
         "iat": datetime.utcnow(),
+        "level": level,
         "exp": datetime.utcnow() + timedelta(
         minutes=int(settings.JWT_EXPIRE_MINUTES)),
     }
 
     return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
-
-from datetime import datetime, timedelta
-from jose import jwt
-
-from app.core.config import settings
 
 # =========================
 #  TOKEN BLACKLIST (simple)

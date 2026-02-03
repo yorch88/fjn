@@ -1,13 +1,11 @@
-const HOST = import.meta.env.VITE_API_HOST;
-const PORT = import.meta.env.VITE_API_PORT;
-const API = `http://${HOST}:${PORT}`;
+import { API_URL } from "../shared/apiConfig";
 
 export async function logoutRequest() {
   const token = localStorage.getItem("token");
 
   if (!token) return;
 
-  await fetch(`${API}/auth/logout`, {
+  await fetch(`${API_URL}/auth/logout`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,

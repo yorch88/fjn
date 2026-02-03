@@ -199,3 +199,27 @@ export async function getReceiptSummary(receiptId) {
   const data = await res.json();
   return Array.isArray(data) ? data : [];
 }
+
+export async function updateItem(itemId, payload) {
+  const res = await fetch(
+    `${API_URL}/receiving/item/${itemId}`,
+    {
+      method: "PATCH",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload),
+    }
+  );
+
+  if (res.status === 401) {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+    return;
+  }
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.detail || "Failed to update item");
+  }
+
+  return res.json();
+}

@@ -1,13 +1,15 @@
 from fastapi import APIRouter, Depends
 from app.core.security import get_current_user
-
+from app.core.permissions import require_roles
+from .service import update_item
 from .models import (
     ReceiptCreate,
     ReceiptOut,
     ReceiptPartCreate,
     ReceiptPartOut,
     ReceivingItemCreate,
-    ReceivingItemOut
+    ReceivingItemOut,
+    ReceivingItemUpdate
 )
 
 from .service import (
@@ -95,3 +97,12 @@ async def receipt_summary_ep(
     current_user=Depends(get_current_user)
 ):
     return await receipt_summary(receipt_id, current_user)
+
+
+@router.patch("/item/{item_id}", response_model=ReceivingItemOut)
+async def update_item_ep(
+    item_id: str,
+    body: ReceivingItemUpdate,
+    current_user=Depends(require_roles(["admin", "editor"]))
+):
+    return await update_item(item_id, body, current_user)

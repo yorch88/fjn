@@ -87,9 +87,8 @@ export async function updateEquipment(id, payload) {
   return res.json();
 }
 export async function getSilverHoursReport(threshold = 50) {
-  const HOST = import.meta.env.VITE_API_HOST;
-  const PORT = import.meta.env.VITE_API_PORT;
-  const API = `http://${HOST}:${PORT}`;
+
+  const API = API_URL;
 
   const token = localStorage.getItem("token");
 

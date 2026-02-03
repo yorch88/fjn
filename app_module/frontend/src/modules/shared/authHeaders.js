@@ -1,4 +1,5 @@
-import { API_BASE_URL } from "../../config/api";
+
+import { API_URL } from "./apiConfig";
 
 export function getAuthHeaders() {
   const token = localStorage.getItem("token");

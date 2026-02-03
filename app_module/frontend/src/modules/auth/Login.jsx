@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { API_URL } from "../shared/apiConfig";
+import logo from "../../images/logo.png";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -6,57 +8,82 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
 
   async function handleLogin(e) {
-    e.preventDefault();
+  e.preventDefault();
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      const HOST = import.meta.env.VITE_API_HOST;
-      const PORT = import.meta.env.VITE_API_PORT;
-      const API = `http://${HOST}:${PORT}`;
+    const res = await fetch(`${API_URL}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
 
-      const res = await fetch(`${API}/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        alert("Login failed:\n" + JSON.stringify(err, null, 2));
-        return;
-      }
-
-      const data = await res.json();
-
-      localStorage.setItem("token", data.access_token);
-
-      const redirect =
-        localStorage.getItem("redirect_after_login") || "/";
-
-      localStorage.removeItem("redirect_after_login");
-
-      window.location.href = redirect;
-    } catch (err) {
-      console.error(err);
-      alert("Unexpected login error");
-    } finally {
-      setLoading(false);
+    if (!res.ok) {
+      const err = await res.json();
+      alert("Login failed:\n" + JSON.stringify(err, null, 2));
+      return;
     }
+
+    const data = await res.json();
+
+    // Token
+    localStorage.setItem("token", data.access_token);
+
+    // Roles
+    localStorage.setItem(
+      "user_level",
+      JSON.stringify(data.level || [])
+    );
+
+    const redirect =
+      localStorage.getItem("redirect_after_login") || "/";
+
+    localStorage.removeItem("redirect_after_login");
+
+    window.location.href = redirect;
+
+  } catch (err) {
+    console.error(err);
+    alert("Unexpected login error");
+  } finally {
+    setLoading(false);
   }
+}
+
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4 relative">
+
+      {/* CARD */}
       <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-xl">
 
+        {/* LOGO */}
+        <div className="flex justify-center mb-1">
+          <img
+            src={logo}
+            alt="Foxconn Logo"
+            className="
+              w-[220px]
+              sm:w-[260px]
+              
+              max-w-full
+              h-auto
+              object-contain
+              drop-shadow-lg
+            "
+          />
+        </div>
+
         {/* HEADER */}
-        <div className="text-center mb-6">
+        <div className="text-center mb-1">
           <h1 className="text-2xl font-bold text-slate-100">
             Support System
           </h1>
+
           <p className="text-slate-400 text-sm mt-1">
             Sign in to continue
           </p>
@@ -123,8 +150,22 @@ export default function Login() {
           >
             {loading ? "Signing in..." : "Login"}
           </button>
+
         </form>
       </div>
+
+      {/* FOOTER */}
+      <div className="absolute bottom-4 right-6 text-slate-500 text-xs">
+        Developed by{" "}
+        <span className="text-slate-300 font-medium">
+          T.E. Jorge Villa
+        </span>
+        {" "} Ver. {" "}
+        <span className="text-slate-300 font-medium">
+          1.0.1
+        </span>
+      </div>
+
     </div>
   );
 }

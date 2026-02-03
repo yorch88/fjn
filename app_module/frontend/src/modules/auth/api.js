@@ -1,8 +1,8 @@
-import { API_BASE_URL } from "../../config/api";
+import { API_URL } from "../shared/apiConfig";
 import { getAuthHeaders } from "../shared/authHeaders";
 
 export async function logout() {
-  const res = await fetch(`${API_BASE_URL}/auth/logout`, {
+  const res = await fetch(`${API_URL}/auth/logout`, {
     method: "POST",
     headers: getAuthHeaders(),
   });

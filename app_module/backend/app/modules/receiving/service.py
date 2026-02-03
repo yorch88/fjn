@@ -295,3 +295,93 @@ async def receipt_summary(receipt_id: str, user):
         result.append(row)
 
     return result
+
+
+async def update_item(item_id: str, data, user):
+    db = await get_db()
+    now = datetime.utcnow()
+
+    item = await db.receiving_items.find_one({
+        "_id": ObjectId(item_id),
+        "id_plant": user["id_plant"]
+    })
+
+    if not item:
+        raise HTTPException(404, "Item not found")
+
+    update_fields = {}
+
+    # =====================
+    # SERIAL VALIDATION
+    # =====================
+
+    if data.serial_number is not None:
+
+        if data.serial_number != item.get("serial_number"):
+
+            exists = await db.receiving_items.find_one({
+                "serial_number": data.serial_number,
+                "_id": {"$ne": ObjectId(item_id)}
+            })
+
+            if exists:
+                raise HTTPException(400, "Serial already exists")
+
+        update_fields["serial_number"] = data.serial_number
+
+
+    # =====================
+    # ASSET TAG
+    # =====================
+
+    if data.asset_tag is not None:
+        update_fields["asset_tag"] = data.asset_tag
+
+
+    # =====================
+    # DESCRIPTION
+    # =====================
+
+    if data.description is not None:
+        update_fields["description"] = data.description
+
+
+    # =====================
+    # QUANTITY RULES
+    # =====================
+
+    is_serial_item = item.get("serial_number") is not None
+
+    if data.quantity is not None:
+
+        if is_serial_item:
+            # Force serial items to always be qty=1
+            update_fields["quantity"] = 1
+        else:
+            if data.quantity <= 0:
+                raise HTTPException(400, "Quantity must be greater than zero")
+
+            update_fields["quantity"] = data.quantity
+
+
+    if not update_fields:
+        raise HTTPException(400, "No fields to update")
+
+
+    update_fields["updated_at"] = now
+
+    await db.receiving_items.update_one(
+        {"_id": ObjectId(item_id)},
+        {"$set": update_fields}
+    )
+
+    updated = await db.receiving_items.find_one(
+        {"_id": ObjectId(item_id)}
+    )
+
+    updated["id"] = str(updated["_id"])
+    del updated["_id"]
+
+    updated = normalize_mongo_doc(updated)
+
+    return updated

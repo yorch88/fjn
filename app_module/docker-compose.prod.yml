@@ -1,14 +1,5 @@
 services:
 
-  frontend:
-    build: ./frontend
-    container_name: support-app-frontend
-    environment:
-      - NODE_ENV=production
-    ports:
-      - "8080:80"
-    command: sh -c "npm run build && npx serve -s dist -l 80"
-
   backend:
     build: ./backend
     container_name: support-app-backend

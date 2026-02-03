@@ -23,6 +23,7 @@ origins = [
     "http://localhost:5173",   # dev
     "http://localhost:8080",   # prod
     "http://localhost:8000",
+    "http://192.168.251.205:5173",
 ]
 
 app.add_middleware(

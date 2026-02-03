@@ -3,13 +3,26 @@ import { useNavigate } from "react-router-dom";
 import { createReceipt } from "../api";
 import { logoutRequest } from "../../auth/auth";
 
+// =========================
+// CONSTANT OPTIONS
+// =========================
+
+const ORIGIN_OPTIONS = ["N/A", "Vietnam", "El Paso TX", "Material Supplier"];
+
+const DESTINATION_OPTIONS = [
+  "Plant 1",
+  "Plant 2",
+  "Plant 3",
+  "Plant 4"
+];
+
 export default function ReceivingCreate() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
     reference_number: "",
-    origin: "Vietnam",
-    destination: "JRZ",
+    origin: "N/A",
+    destination: "Plant 4",
   });
 
   const [loading, setLoading] = useState(false);
@@ -42,11 +55,7 @@ export default function ReceivingCreate() {
 
     try {
       await createReceipt(form);
-
-      // IMPORTANT:
-      // After creating receipt return to list view
       navigate("/receiving");
-
     } catch (err) {
       alert(err.message || "Failed to create receipt");
     } finally {
@@ -81,6 +90,7 @@ export default function ReceivingCreate() {
         >
           Back
         </button>
+
       </header>
 
       {/* CONTENT */}
@@ -91,10 +101,12 @@ export default function ReceivingCreate() {
           className="max-w-xl mx-auto bg-slate-900/70 border border-slate-800 rounded-xl p-6 space-y-4"
         >
 
+          {/* Reference Number */}
           <div>
             <label className="text-xs text-slate-400">
               Reference Number *
             </label>
+
             <input
               name="reference_number"
               value={form.reference_number}
@@ -104,30 +116,47 @@ export default function ReceivingCreate() {
             />
           </div>
 
+          {/* Origin Dropdown */}
           <div>
             <label className="text-xs text-slate-400">
               Origin
             </label>
-            <input
+
+            <select
               name="origin"
               value={form.origin}
               onChange={handleChange}
               className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2"
-            />
+            >
+              {ORIGIN_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
           </div>
 
+          {/* Destination Dropdown */}
           <div>
             <label className="text-xs text-slate-400">
               Destination
             </label>
-            <input
+
+            <select
               name="destination"
               value={form.destination}
               onChange={handleChange}
               className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2"
-            />
+            >
+              {DESTINATION_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
           </div>
 
+          {/* Buttons */}
           <div className="flex justify-end gap-3">
 
             <button

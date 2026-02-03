@@ -36,7 +36,8 @@ async def login_user(data: LoginRequest):
     token = create_token(
         user_id=str(user["_id"]),
         id_plant=user["id_plant"],
-        clock_num=user["clock_num"]
+        clock_num=user["clock_num"],
+        level=user.get("level", [])
     )
 
     await db.users.update_one(

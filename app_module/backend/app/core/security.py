@@ -26,15 +26,20 @@ async def get_current_user(
             detail="Invalid or expired token",
         )
 
-    user_id: str | None = payload.get("sub")
-    id_plant: str | None = payload.get("id_plant")
-    #clock_num: str | None = payload.get("clock_num"),
+    user_id = payload.get("sub")
+    id_plant = payload.get("id_plant")
     clock_num = normalize_clock(payload.get("clock_num"))
+    level = payload.get("level", [])
+
     if not user_id or not id_plant:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token payload",
         )
 
-    return {"id": user_id, "id_plant": id_plant, "clock_num": clock_num}
- 
+    return {
+        "id": user_id,
+        "id_plant": id_plant,
+        "clock_num": clock_num,
+        "level": level
+    }
