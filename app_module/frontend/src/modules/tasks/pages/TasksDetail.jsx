@@ -153,7 +153,6 @@ async function handleCloseTask() {
           <h2 className="text-lg font-semibold mb-2">
             {task.title}
           </h2>
-
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
             <div>
               <span className="text-slate-400">Status</span>
@@ -189,7 +188,16 @@ async function handleCloseTask() {
             </div>
             </div>
           </div>
-
+ {task.description && (
+          <div className="mt-4 p-4 bg-slate-950 border border-slate-800 rounded-lg">
+            <div className="text-xs uppercase text-slate-400 mb-2 tracking-wide">
+              Description
+            </div>
+            <div className="text-sm text-slate-300 whitespace-pre-line">
+              {task.description}
+            </div>
+          </div>
+          )}
           {task.status !== "closed" && (
             <div className="mt-4">
               <button
