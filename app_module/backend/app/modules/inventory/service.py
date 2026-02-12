@@ -2,7 +2,7 @@
 
 from bson import ObjectId
 from fastapi import HTTPException
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from ..helpers.inventory import calculate_usage_hours
 from ..helpers.mongo import normalize_mongo_doc
 
@@ -18,12 +18,12 @@ from .models import (
 def compute_next_recal(grade: str, ref: datetime | None):
     if grade != "GOLDEN":
         return None
-    base = ref or datetime.utcnow()
+    base = ref or datetime.now(timezone.utc)
     return base + timedelta(days=365)
 
 async def create_equipment(data: EquipmentCreate, user):
     db = await get_db()
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
 
     # check duplicates
     exists = await db.inventory_equipment.find_one({
@@ -116,7 +116,7 @@ async def add_usage(data: UsageLogCreate, user):
         "started_at": data.started_at,
         "ended_at": data.ended_at,
         "duration_hours": duration,
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(timezone.utc),
         "created_by": user["id"]
     }
 
@@ -126,7 +126,7 @@ async def add_usage(data: UsageLogCreate, user):
 
     update = {
         "total_usage_hours": new_total,
-        "updated_at": datetime.utcnow()
+        "updated_at": datetime.now(timezone.utc)
     }
 
     if equipment["grade"] == "SILVER" and new_total > equipment.get("usage_hours_limit", 400):
@@ -149,7 +149,7 @@ async def add_equipment_history(equipment_id, field, old, new, user, reason=None
         "new_value": new,
         "changed_by": str(user["clock_num"]),
         "reason": reason,
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(timezone.utc),
     }
 
     await db.inventory_equipment.update_one(
@@ -166,7 +166,7 @@ async def update_equipment(equipment_id: str, body: EquipmentUpdate, user):
     if not payload:
         raise HTTPException(400, detail="No fields to update")
 
-    payload["updated_at"] = datetime.utcnow()
+    payload["updated_at"] = datetime.now(timezone.utc)
 
     result = await db.inventory_equipment.update_one(
         {
@@ -239,7 +239,7 @@ async def move_equipment(equipment_id: str, location_id: str, user):
         {
             "$set": {
                 "location_id": location_oid,
-                "updated_at": datetime.utcnow()
+                "updated_at": datetime.now(timezone.utc)
             }
         }
     )
@@ -251,7 +251,7 @@ async def move_equipment(equipment_id: str, location_id: str, user):
         "from_location": old_location,
         "to_location": location_oid,
         "moved_by": user["clock_num"],
-        "moved_at": datetime.utcnow(),
+        "moved_at": datetime.now(timezone.utc),
         "id_plant": user["id_plant"]
     }
 

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getTasks, closeTask } from "../api";
 
 import LogoutButton from "../../shared/LogoutButton";
+import { formatMXTime } from "../../../utils/formatMXTime";
 
 export default function TasksReports() {
   const navigate = useNavigate();
@@ -73,6 +74,7 @@ export default function TasksReports() {
             <thead className="text-slate-400">
               <tr>
                 <th className="text-left py-2">Title</th>
+                <th className="text-left py-2">Created</th>
                 <th className="text-left py-2">Status</th>
                 <th className="text-left py-2">ETA</th>
                 <th className="text-left py-2">Delayed</th>
@@ -84,12 +86,14 @@ export default function TasksReports() {
               {tasks.map((t) => (
                 <tr key={t.id} className="border-t border-slate-800">
                   <td className="py-2">{t.title}</td>
+                  <td className="py-2">
+                    {formatMXTime(t.created_at)}
+                  </td>
+
                   <td className="py-2">{t.status}</td>
 
                   <td className="py-2">
-                    {t.eta_at
-                      ? new Date(t.eta_at).toLocaleString()
-                      : "-"}
+                    {formatMXTime(t.eta_at)}
                   </td>
 
                   <td

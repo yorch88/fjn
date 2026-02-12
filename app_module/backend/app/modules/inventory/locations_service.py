@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from bson import ObjectId
 from fastapi import HTTPException
 from app.core.db import get_db
@@ -7,7 +7,7 @@ from ..helpers.mongo import normalize_mongo_doc
 
 async def create_location(data, user):
     db = await get_db()
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
 
     exists = await db.inventory_locations.find_one({
         "code": data.code,

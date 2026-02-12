@@ -1,5 +1,5 @@
 from passlib.context import CryptContext
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from jose import jwt
 
 from app.core.config import settings
@@ -22,9 +22,9 @@ def create_token(user_id: str, id_plant: str, clock_num: str,  level: list[str])
         "sub": user_id,
         "id_plant": id_plant,
         "clock_num": str(clock_num),
-        "iat": datetime.utcnow(),
+        "iat": datetime.now(timezone.utc),
         "level": level,
-        "exp": datetime.utcnow() + timedelta(
+        "exp": datetime.now(timezone.utc) + timedelta(
         minutes=int(settings.JWT_EXPIRE_MINUTES)),
     }
 
@@ -54,7 +54,7 @@ def is_token_blacklisted(token: str) -> bool:
     if not exp:
         return False
 
-    if exp < datetime.utcnow():
+    if exp < datetime.now(timezone.utc):
         TOKEN_BLACKLIST.pop(token, None)
         return False
 

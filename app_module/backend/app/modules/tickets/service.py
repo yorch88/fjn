@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from typing import List
 from app.core.db import get_db
 from .models import Ticket, TicketCreate, TicketOut, Comment, TicketUpdate
-from datetime import datetime
+from datetime import datetime, timezone
 from app.modules.dependencies.issues.service import get_issue
 
 
@@ -24,14 +24,14 @@ async def add_comment_to_ticket(ticket_id: str, message: str, current_user):
     comment = Comment(
         user_clock=str(current_user["clock_num"]).strip("(),' "),
         message=message,
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
     ).model_dump()
 
     await tickets_collection.update_one(
         {"_id": ObjectId(ticket_id)},
         {
             "$push": {"comments": comment},
-            "$set": {"updated_at": datetime.utcnow()},
+            "$set": {"updated_at": datetime.now(timezone.utc)},
         },
     )
 
@@ -72,7 +72,7 @@ async def update_ticket_service(ticket_id: str, data: TicketCreate, user):
             "old": ticket.get("issue_id"),
             "new": data.issue_id,
             "changed_by": str(user["clock_num"]),
-            "changed_at": datetime.utcnow(),
+            "changed_at": datetime.now(timezone.utc),
         })
 
         updates["change_history"] = ticket["change_history"]
@@ -122,7 +122,7 @@ async def create_ticket(data: TicketCreate, user) -> TicketOut:
         "comments": [],
         "change_history": [],
 
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(timezone.utc),
     }
 
     result = await db.tickets.insert_one(doc)
@@ -160,7 +160,7 @@ async def add_history(ticket_id: str, field: str, old, new, user, reason=None):
         "new_value": str(new) if new is not None else None,
         "changed_by": str(clock),
         "reason": reason,
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(timezone.utc),
     }
 
     await db.tickets.update_one(
@@ -198,7 +198,7 @@ async def update_ticket_service(ticket_id: str, data: TicketUpdate, user):
     if not updates:
         return {"message": "No changes applied"}
 
-    updates["updated_at"] = datetime.utcnow()
+    updates["updated_at"] = datetime.now(timezone.utc)
 
     await db.tickets.update_one(
         {"_id": ObjectId(ticket_id)},
@@ -219,7 +219,7 @@ async def assign_ticket(ticket_id: str, user_id: str, current_user):
         "previous": ticket.get("assigned_to"),
         "new": user_id,
         "changed_by": str(current_user["clock_num"]).strip(),
-        "date": datetime.utcnow(),
+        "date": datetime.now(timezone.utc),
     }
 
     await db.tickets.update_one(

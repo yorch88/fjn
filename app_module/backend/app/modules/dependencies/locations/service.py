@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from bson import ObjectId
 from fastapi import HTTPException
 from app.core.db import get_db
@@ -28,7 +28,7 @@ async def create_location(payload, user):
     db = await get_db()
     await ensure_indexes(db)
 
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     doc = payload.model_dump()
     doc.update({
         "id_plant": user["id_plant"],
@@ -63,7 +63,7 @@ async def get_location(location_id: str, user):
 
 async def update_location(location_id: str, payload, user):
     db = await get_db()
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
 
     updates = {k: v for k, v in payload.model_dump().items() if v is not None}
     if not updates:

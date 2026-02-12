@@ -1,6 +1,6 @@
 from bson import ObjectId
 from fastapi import HTTPException
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.core.db import get_db
 from ..helpers.mongo import normalize_mongo_doc
@@ -12,7 +12,7 @@ from ..helpers.mongo import normalize_mongo_doc
 
 async def create_receipt(data, user):
     db = await get_db()
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
 
     exists = await db.receiving_receipts.find_one({
         "reference_number": data.reference_number,
@@ -73,7 +73,7 @@ async def list_receipts(user):
 
 async def add_part(receipt_id: str, data, user):
     db = await get_db()
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
 
     receipt = await db.receiving_receipts.find_one({
         "_id": ObjectId(receipt_id),
@@ -139,7 +139,7 @@ async def list_parts(receipt_id: str, user):
 
 async def add_item(part_id: str, data, user):
     db = await get_db()
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
 
     part = await db.receiving_parts.find_one({
         "_id": ObjectId(part_id),
@@ -299,7 +299,7 @@ async def receipt_summary(receipt_id: str, user):
 
 async def update_item(item_id: str, data, user):
     db = await get_db()
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
 
     item = await db.receiving_items.find_one({
         "_id": ObjectId(item_id),

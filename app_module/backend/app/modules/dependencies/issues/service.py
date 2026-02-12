@@ -1,6 +1,6 @@
 from app.core.db import get_db
 from bson import ObjectId
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import HTTPException
 
 from .models import Issue, IssueCreate
@@ -13,7 +13,7 @@ async def create_issue(data: IssueCreate) -> Issue:
         "name": data.name,
         "department": data.department,
         "description": data.description,
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(timezone.utc),
     }
 
     result = await db.issues.insert_one(doc)

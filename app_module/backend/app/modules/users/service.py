@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import HTTPException
 
 from .models import Users, UserCreate, LoginRequest
@@ -42,7 +42,7 @@ async def login_user(data: LoginRequest):
 
     await db.users.update_one(
         {"_id": user["_id"]},
-        {"$set": {"last_activity": datetime.utcnow()}},
+        {"$set": {"last_activity": datetime.now(timezone.utc)}},
     )
 
     return {"access_token": token, "token_type": "bearer"}

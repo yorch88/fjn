@@ -9,6 +9,12 @@ from app.modules.dependencies.departments.service import get_department
 # ======================================================
 # Helpers
 # ======================================================
+def ensure_utc(dt):
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt
 
 async def validate_department_optional(department_id: str):
 
@@ -23,7 +29,9 @@ async def validate_department_optional(department_id: str):
             detail=f"Invalid department reference: {department_id}"
         )
 
+import logging
 
+logger = logging.getLogger(__name__)
 # ======================================================
 # Create Task
 # ======================================================
@@ -42,7 +50,8 @@ async def create_task(payload, user):
     task = payload.model_dump()
 
     now = datetime.now(timezone.utc)
-
+    print("NOW BACKEND:", now)
+    logger.info(f"NOW BACKEND: {now}")
     eta = payload.eta_at
     if eta:
         if eta.tzinfo is None:
@@ -91,7 +100,6 @@ async def create_task(payload, user):
 # ======================================================
 # Get Single Task
 # ======================================================
-
 async def get_task(task_id: str, user):
 
     db = await get_db()
@@ -102,21 +110,33 @@ async def get_task(task_id: str, user):
         raise HTTPException(status_code=404, detail="Task not found")
 
     if task["created_by"] != user["id"]:
-        raise HTTPException(403, "Not authorized")
+        raise HTTPException(status_code=403, detail="Not authorized")
 
-    # ============================
-    # LIVE DELAY CALCULATION
-    # ============================
+    now = datetime.now(timezone.utc)
 
+    # Normalizar fechas
+    task["created_at"] = ensure_utc(task.get("created_at"))
+    task["eta_at"] = ensure_utc(task.get("eta_at"))
+    task["completed_at"] = ensure_utc(task.get("completed_at"))
+
+    # Live delay calculation
     if task.get("status") == "open" and task.get("eta_at"):
-        now = datetime.utcnow()
         task["is_delayed"] = now > task["eta_at"]
+
+    # Convertir a ISO con offset explícito
+    if task.get("created_at"):
+        task["created_at"] = task["created_at"].isoformat()
+
+    if task.get("eta_at"):
+        task["eta_at"] = task["eta_at"].isoformat()
+
+    if task.get("completed_at"):
+        task["completed_at"] = task["completed_at"].isoformat()
 
     task["id"] = str(task["_id"])
     del task["_id"]
 
     return task
-
 
 
 # ======================================================
@@ -132,16 +152,26 @@ async def list_tasks(user):
     ).sort("created_at", -1)
 
     tasks = []
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
 
     async for task in cursor:
 
-        # ============================
-        # LIVE DELAY CALCULATION
-        # ============================
+        task["created_at"] = ensure_utc(task.get("created_at"))
+        task["eta_at"] = ensure_utc(task.get("eta_at"))
+        task["completed_at"] = ensure_utc(task.get("completed_at"))
 
         if task.get("status") == "open" and task.get("eta_at"):
             task["is_delayed"] = now > task["eta_at"]
+
+        # Convertir a ISO
+        if task.get("created_at"):
+            task["created_at"] = task["created_at"].isoformat()
+
+        if task.get("eta_at"):
+            task["eta_at"] = task["eta_at"].isoformat()
+
+        if task.get("completed_at"):
+            task["completed_at"] = task["completed_at"].isoformat()
 
         task["id"] = str(task["_id"])
         del task["_id"]
@@ -149,7 +179,6 @@ async def list_tasks(user):
         tasks.append(task)
 
     return tasks
-
 
 # ======================================================
 # Move Task (DHL Tracking)
@@ -191,7 +220,7 @@ async def move_task(
             detail="Task already in this department"
         )
 
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
 
     # ============================
     # Tracking Event
@@ -243,7 +272,7 @@ async def add_comment(task_id: str, user, message: str):
     event = {
         "type": "COMMENT",
         "message": message,
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(timezone.utc),
         "user_id": user["id"]
     }
 
@@ -251,7 +280,7 @@ async def add_comment(task_id: str, user, message: str):
         {"_id": ObjectId(task_id)},
         {
             "$push": {"events": event},
-            "$set": {"updated_at": datetime.utcnow()}
+            "$set": {"updated_at": datetime.now(timezone.utc)}
         }
     )
 
@@ -274,17 +303,17 @@ async def close_task(task_id: str, user, comment: str = None):
     if task["status"] == "closed":
         raise HTTPException(400, "Task already closed")
 
-    completed_at = datetime.utcnow()
-    eta = task.get("eta_at")
+    completed_at = datetime.now(timezone.utc)
+    eta = ensure_utc(task.get("eta_at"))
+
+    is_delayed = False
+    if eta:
+        is_delayed = completed_at > eta
 
     # ============================
     # ETA evaluation
     # ============================
 
-    is_delayed = False
-    if eta:
-        if eta.replace(tzinfo=None) < completed_at:
-            is_delayed = True
     if task.get("eta_at"):
         if completed_at > task["eta_at"]:
             is_delayed = True

@@ -1,12 +1,12 @@
 from app.core.db import get_db
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from fastapi import HTTPException
 
 
 async def get_silver_hours_report(user, threshold: float = 50):
     db = await get_db()
 
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
 
     cursor = db.inventory_equipment.find({
         "id_plant": user["id_plant"],

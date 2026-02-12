@@ -1,6 +1,6 @@
 from app.core.db import get_db
 from app.modules.users.auth import hash_password
-from datetime import datetime
+from datetime import datetime, timezone
 from app.core.config import settings
 import os
 
@@ -31,7 +31,7 @@ async def create_admin_user():
         "id_plant": None,
         "last_activity": None,
         "level": ["superadmin"],
-        "created_at": datetime.utcnow()
+        "created_at": datetime.now(timezone.utc)
     }
 
     await db.users.insert_one(admin_doc)
