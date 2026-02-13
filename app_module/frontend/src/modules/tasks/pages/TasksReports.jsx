@@ -26,6 +26,22 @@ export default function TasksReports() {
     load();
   }, []);
 
+
+function getStatusColor(task) {
+  if (task.status === "closed") {
+      return "bg-green-600 text-white";
+    }
+
+    if (task.status === "open" && task.is_delayed) {
+      return "bg-red-600 text-white";
+    }
+
+    if (task.status === "open") {
+      return "bg-yellow-400 text-black";
+    }
+
+    return "";
+  }
   // ======================
   // CLOSE TASK (WITH COMMENT)
   // ======================
@@ -90,7 +106,13 @@ export default function TasksReports() {
                     {formatMXTime(t.created_at)}
                   </td>
 
-                  <td className="py-2">{t.status}</td>
+                  <td className="py-2">
+                    <span
+                      className={`px-3 py-1 rounded-md text-xs font-semibold ${getStatusColor(t)}`}
+                    >
+                      {t.status.toUpperCase()}
+                    </span>
+                  </td>
 
                   <td className="py-2">
                     {formatMXTime(t.eta_at)}

@@ -9,12 +9,37 @@ from app.modules.dependencies.departments.service import get_department
 # ======================================================
 # Helpers
 # ======================================================
+
 def ensure_utc(dt):
     if dt is None:
         return None
+
+    if isinstance(dt, str):
+        try:
+            dt = datetime.fromisoformat(dt)
+        except ValueError:
+            return None  # o levanta error claro
+
+    if not isinstance(dt, datetime):
+        return None
+
     if dt.tzinfo is None:
-        return dt.replace(tzinfo=timezone.utc)
+        dt = dt.replace(tzinfo=timezone.utc)
+
     return dt
+
+async def load_task_from_db(task_id: str, user):
+    db = await get_db()
+
+    task = await db.tasks.find_one({"_id": ObjectId(task_id)})
+
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    if task["created_by"] != user["id"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    return task
 
 async def validate_department_optional(department_id: str):
 
@@ -202,7 +227,7 @@ async def move_task(
     # Load + Ownership validation
     # ============================
 
-    task = await get_task(task_id, user)
+    task = await load_task_from_db(task_id, user)
 
     # ============================
     # Business rules
@@ -267,7 +292,7 @@ async def add_comment(task_id: str, user, message: str):
 
     db = await get_db()
 
-    task = await get_task(task_id, user)
+    task = await load_task_from_db(task_id, user)
 
     event = {
         "type": "COMMENT",
@@ -298,25 +323,30 @@ async def close_task(task_id: str, user, comment: str = None):
     # Load & Authorization
     # ============================
 
-    task = await get_task(task_id, user)
+    task = await load_task_from_db(task_id, user)
 
     if task["status"] == "closed":
         raise HTTPException(400, "Task already closed")
 
+    # ============================
+    # Normalize datetimes
+    # ============================
+
     completed_at = datetime.now(timezone.utc)
-    eta = ensure_utc(task.get("eta_at"))
+
+    raw_eta = task.get("eta_at")
+    eta = ensure_utc(raw_eta)
+
+    # ============================
+    # Delay evaluation (SAFE)
+    # ============================
 
     is_delayed = False
-    if eta:
+
+    if eta is not None:
+        # completed_at es aware UTC
+        # eta ahora también es aware UTC
         is_delayed = completed_at > eta
-
-    # ============================
-    # ETA evaluation
-    # ============================
-
-    if task.get("eta_at"):
-        if completed_at > task["eta_at"]:
-            is_delayed = True
 
     # ============================
     # Tracking Event
@@ -327,8 +357,6 @@ async def close_task(task_id: str, user, comment: str = None):
         "comment": comment,
         "created_at": completed_at,
         "is_delayed": is_delayed,
-
-        # Audit trail
         "user_id": user["id"]
     }
 
@@ -352,3 +380,4 @@ async def close_task(task_id: str, user, comment: str = None):
     )
 
     return True
+
